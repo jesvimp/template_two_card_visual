@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "sourceMap": true,
+    "outDir": "./.tmp/build/",
+    "moduleResolution": "node",
+    "jsx": "react",
+    "module": "esnext",
+    "target": "es6",
+    "types": ["powerbi-visuals-api", "react", "react-dom", "node"],
+    "declaration": true,
+    "lib": ["es2020", "dom"]
+  },
+  "files": ["src/visual.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

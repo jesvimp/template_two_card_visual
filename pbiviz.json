@@ -1,0 +1,25 @@
+{
+  "visual": {
+    "name": "LocalChat",
+    "displayName": "Local Chat",
+    "guid": "LocalChat_2025_10",
+    "visualClassName": "Visual",
+    "version": "1.0.0.0",
+    "description": "Local-only chat UI (no API calls)",
+    "supportUrl": "https://example.com/support",
+    "gitHubUrl": "https://example.com/repo"
+  },
+  "author": {
+    "name": "Your Name or Company",
+    "email": "you@example.com"
+  },
+  "apiVersion": "5.3.0",
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "stringResources": [],
+  "externalJS": [],
+  "predicates": []
+}

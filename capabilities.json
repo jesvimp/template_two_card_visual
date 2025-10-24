@@ -1,0 +1,31 @@
+{
+  "dataRoles": [
+    { "name": "Category", "displayName": "Category", "kind": "Grouping" },
+    { "name": "Values", "displayName": "Values", "kind": "Measure" }
+  ],
+  "dataViewMappings": [
+    {
+      "categorical": {
+        "categories": {
+          "for": { "in": "Category" },
+          "dataReductionAlgorithm": { "top": { "count": 1000 } }
+        },
+        "values": {
+          "select": [
+            { "for": { "in": "Values" } }
+          ]
+        }
+      }
+    }
+  ],
+  "objects": {},
+  "privileges": [
+    {
+      "name": "WebAccess",
+      "parameters": [
+        "http://127.0.0.1:8000",
+        "http://localhost:8000"
+      ]
+    }
+  ]
+}
