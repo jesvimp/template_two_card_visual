@@ -191,6 +191,184 @@ module.exports = function (exec) {
 
 /***/ }),
 
+/***/ 1353:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   b: () => (/* binding */ Visual)
+/* harmony export */ });
+/* harmony import */ var core_js_stable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(84315);
+/* harmony import */ var core_js_stable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_stable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7452);
+/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(96540);
+/* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5338);
+/* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(11506);
+/* harmony import */ var _components_TwoFieldCard__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(61038);
+
+
+
+
+
+
+
+
+
+
+/**
+ * visual.tsx
+ * What this file does:
+ * - Implements the Power BI visual lifecycle (constructor, update, destroy).
+ * - Creates a React root and re-renders on each update.
+ * - Turns the DataView into a simple ViewModel (via transform), then renders cards.
+ * - Implements enumerateObjectInstances so your Format pane works.
+ */
+class Visual {
+    /**
+     * constructor
+     * Called once when the visual is created.
+     * We create a container <div>, attach it to Power BI’s provided element,
+     * create a React root, and perform an initial render.
+     */
+    constructor(options) {
+        /* Latest view model (data + settings) we render and use for the Format pane */
+        this.viewModel = {
+            items: [],
+            settings: (0,_model__WEBPACK_IMPORTED_MODULE_4__/* .parseSettings */ .P)() // defaults when no DataView yet
+        };
+        this.host = options.host;
+        this.selectionManager = this.host.createSelectionManager();
+        // Create and attach a container for React to render into
+        this.container = document.createElement("div");
+        this.container.className = "visual-root";
+        options.element.appendChild(this.container);
+        // React 18 root
+        this.root = (0,react_dom_client__WEBPACK_IMPORTED_MODULE_3__/* .createRoot */ .H)(this.container);
+        // Initial render (empty items + default settings)
+        this.render();
+    }
+    /**
+     * update
+     * Called whenever Power BI has new data, the visual is resized,
+     * or the user changes something (like settings).
+     * We rebuild the ViewModel and trigger a render.
+     */
+    update(options) {
+        var _a;
+        // options.dataViews is an array; we use the first one
+        this.viewModel = (0,_model__WEBPACK_IMPORTED_MODULE_4__/* .transform */ .p)(this.host, (_a = options.dataViews) === null || _a === void 0 ? void 0 : _a[0]);
+        this.render();
+    }
+    /**
+     * keyForSelectionId
+     * Converts a selection ID (Power BI internal object) to a stable string key.
+     * We use this to track which rows are selected when re-rendering.
+     */
+    keyForSelectionId(id) {
+        if (!id)
+            return undefined;
+        const anyId = id;
+        try {
+            if (typeof anyId.getKey === "function")
+                return anyId.getKey();
+            if (typeof anyId.getSelector === "function")
+                return JSON.stringify(anyId.getSelector());
+        }
+        catch (_a) {
+            // If anything goes wrong, fall through to String(id)
+        }
+        return String(id);
+    }
+    /**
+     * render
+     * React render. We:
+     * - compute which items are currently selected,
+     * - render one TwoFieldCard per row,
+     * - wire clicks to the selection manager (supports Ctrl/Cmd for multi-select).
+     */
+    render() {
+        const { items, settings } = this.viewModel;
+        // Build a Set of selected keys so each card can know if it's selected
+        const selectedKeys = new Set((this.selectionManager.getSelectionIds() || [])
+            .map(id => this.keyForSelectionId(id))
+            .filter((k) => !!k));
+        // Cards list
+        const cards = (react__WEBPACK_IMPORTED_MODULE_2__.createElement("div", { className: "cards" }, items.map((item, i) => {
+            var _a;
+            const key = (_a = this.keyForSelectionId(item.identity)) !== null && _a !== void 0 ? _a : `row-${i}`;
+            const selected = key ? selectedKeys.has(key) : false;
+            return (react__WEBPACK_IMPORTED_MODULE_2__.createElement(_components_TwoFieldCard__WEBPACK_IMPORTED_MODULE_5__/* .TwoFieldCard */ .H, { key: key, item: item, settings: settings, selected: selected, onClick: (e) => {
+                    // Hold Ctrl/Cmd to multi-select
+                    const multi = e.ctrlKey || e.metaKey;
+                    if (item.identity) {
+                        this.selectionManager
+                            .select(item.identity, multi)
+                            .then(() => this.render()); // re-render to reflect selection state
+                    }
+                } }));
+        })));
+        // Push the virtual DOM to the actual DOM
+        this.root.render(cards);
+    }
+    /**
+     * enumerateObjectInstances
+     * This is how the Format pane reads your settings.
+     * For each "object" defined in capabilities.json, return an array with a single
+     * instance describing current values. Power BI will render controls accordingly.
+     */
+    enumerateObjectInstances(options) {
+        const s = this.viewModel.settings;
+        switch (options.objectName) {
+            case "card":
+                return [{
+                        objectName: "card",
+                        properties: {
+                            backgroundColor: { solid: { color: s.cardBackground } },
+                            padding: s.padding,
+                            cornerRadius: s.cornerRadius,
+                            shadow: s.shadow
+                        },
+                        selector: null // null means "visual-level" settings, not data-point scoped
+                    }];
+            case "field1Style":
+                return [{
+                        objectName: "field1Style",
+                        properties: {
+                            color: { solid: { color: s.field1.color } },
+                            backgroundColor: { solid: { color: s.field1.backgroundColor } },
+                            fontSize: s.field1.fontSize
+                        },
+                        selector: null
+                    }];
+            case "field2Style":
+                return [{
+                        objectName: "field2Style",
+                        properties: {
+                            color: { solid: { color: s.field2.color } },
+                            backgroundColor: { solid: { color: s.field2.backgroundColor } },
+                            fontSize: s.field2.fontSize
+                        },
+                        selector: null
+                    }];
+            default:
+                // If Desktop asks about unsupported objects, return an empty list
+                return [];
+        }
+    }
+    /**
+     * destroy
+     * Called when the visual is removed. We unmount React to free resources.
+     */
+    destroy() {
+        this.root.unmount();
+    }
+}
+/* unused harmony default export */ var __WEBPACK_DEFAULT_EXPORT__ = ((/* unused pure expression or super */ null && (Visual)));
+
+
+/***/ }),
+
 /***/ 1469:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -3943,6 +4121,125 @@ $({ target: 'String', proto: true, forced: !MDN_POLYFILL_BUG && !CORRECT_IS_REGE
     return stringSlice(that, index, index + search.length) === search;
   }
 });
+
+
+/***/ }),
+
+/***/ 11506:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   P: () => (/* binding */ parseSettings),
+/* harmony export */   p: () => (/* binding */ transform)
+/* harmony export */ });
+/* ---------- Default settings (used when user hasn't changed the Format pane) ---------- */
+const defaults = {
+    // 8-digit hex includes alpha channel (last two digits = FF = fully opaque)
+    cardBackground: "#ffffffff",
+    padding: 12,
+    cornerRadius: 8,
+    shadow: true,
+    field1: { color: "#111111", backgroundColor: "transparent", fontSize: 16 },
+    field2: { color: "#444444", backgroundColor: "transparent", fontSize: 14 }
+};
+/* ---------- Small helpers ---------- */
+/**
+ * Finds the column index for a given role name (as defined in capabilities.json).
+ * Returns undefined if the role isn't present.
+ */
+function getRoleIndex(columns, roleName) {
+    const i = columns.findIndex(c => c.roles && c.roles[roleName]);
+    return i >= 0 ? i : undefined;
+}
+/**
+ * Safely converts a PrimitiveValue to a string (or undefined if null/undefined).
+ * Power BI cells can be numbers, strings, booleans, dates, or null.
+ */
+function toStr(v) {
+    return v == null ? undefined : String(v);
+}
+/* ---------- Read settings from the Format pane ---------- */
+/**
+ * parseSettings
+ * Reads the settings the user can change in the Format pane and merges them with defaults.
+ * All settings are defined in capabilities.json → "objects".
+ */
+function parseSettings(dataView) {
+    var _a, _b;
+    // metadata.objects holds all the Format pane values for the visual.
+    // Use optional chaining + default empty object to avoid crashes when not set.
+    const objects = ((_b = (_a = dataView === null || dataView === void 0 ? void 0 : dataView.metadata) === null || _a === void 0 ? void 0 : _a.objects) !== null && _b !== void 0 ? _b : {});
+    // Helper: read a color from a "fill" property. If not set, use fallback.
+    // Format pane colors are stored as { solid: { color: "#RRGGBB" } }
+    const getFill = (obj, prop, fallback) => { var _a, _b, _c; return ((_c = (_b = (_a = objects === null || objects === void 0 ? void 0 : objects[obj]) === null || _a === void 0 ? void 0 : _a[prop]) === null || _b === void 0 ? void 0 : _b.solid) === null || _c === void 0 ? void 0 : _c.color) || fallback; };
+    // Helper: read a number with a fallback.
+    const getNum = (obj, prop, fallback) => {
+        var _a;
+        const v = (_a = objects === null || objects === void 0 ? void 0 : objects[obj]) === null || _a === void 0 ? void 0 : _a[prop];
+        return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+    };
+    // Helper: read a boolean with a fallback.
+    const getBool = (obj, prop, fallback) => {
+        var _a;
+        const v = (_a = objects === null || objects === void 0 ? void 0 : objects[obj]) === null || _a === void 0 ? void 0 : _a[prop];
+        return typeof v === "boolean" ? v : fallback;
+    };
+    // Build the final settings object, pulling values from:
+    // - "card" object (card-level properties)
+    // - "field1Style" and "field2Style" objects (per-field styles)
+    return {
+        cardBackground: getFill("card", "backgroundColor", defaults.cardBackground),
+        padding: getNum("card", "padding", defaults.padding),
+        cornerRadius: getNum("card", "cornerRadius", defaults.cornerRadius),
+        shadow: getBool("card", "shadow", defaults.shadow),
+        field1: {
+            color: getFill("field1Style", "color", defaults.field1.color),
+            backgroundColor: getFill("field1Style", "backgroundColor", defaults.field1.backgroundColor),
+            fontSize: getNum("field1Style", "fontSize", defaults.field1.fontSize)
+        },
+        field2: {
+            color: getFill("field2Style", "color", defaults.field2.color),
+            backgroundColor: getFill("field2Style", "backgroundColor", defaults.field2.backgroundColor),
+            fontSize: getNum("field2Style", "fontSize", defaults.field2.fontSize)
+        }
+    };
+}
+/* ---------- Turn the DataView into the ViewModel used by React ---------- */
+/**
+ * transform
+ * - Reads data from the Power BI DataView (we expect table mapping).
+ * - Locates which columns were put into "field1" and "field2" roles.
+ * - Builds an array of items (one per row), including a selection identity.
+ * - Returns the items plus the merged settings.
+ */
+function transform(host, dataView) {
+    var _a, _b;
+    // Always read the latest settings so UI reflects Format pane changes instantly.
+    const settings = parseSettings(dataView);
+    // If there are no rows yet (e.g., no fields assigned), return empty items.
+    if (!((_b = (_a = dataView === null || dataView === void 0 ? void 0 : dataView.table) === null || _a === void 0 ? void 0 : _a.rows) === null || _b === void 0 ? void 0 : _b.length)) {
+        return { items: [], settings };
+    }
+    const table = dataView.table;
+    const cols = table.columns;
+    // Find the indices of the columns the author placed into each role.
+    const idx = {
+        field1: getRoleIndex(cols, "field1"),
+        field2: getRoleIndex(cols, "field2")
+    };
+    // Map each table row to our TwoFieldItem structure.
+    const items = table.rows.map((row, rIndex) => {
+        // Selection ID allows click selection (cross-filtering) in the report.
+        const identity = host.createSelectionIdBuilder().withTable(table, rIndex).createSelectionId();
+        return {
+            field1: idx.field1 !== undefined ? toStr(row[idx.field1]) : undefined,
+            field2: idx.field2 !== undefined ? toStr(row[idx.field2]) : undefined,
+            identity
+        };
+    });
+    return { items, settings };
+}
 
 
 /***/ }),
@@ -10102,48 +10399,6 @@ if (NOT_GENERIC || INCORRECT_NAME) {
 
 /***/ }),
 
-/***/ 38995:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   H: () => (/* binding */ TwoFieldCard)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(96540);
-/**
- * TwoFieldCard.tsx
- * A tiny React component that renders a single "card" with two textual fields.
- * - You pass down the text values and the visual settings.
- * - Styling (colors, font size, backgrounds) comes from settings via inline styles for simplicity.
- */
-
-const TwoFieldCard = ({ item, settings, selected, onClick }) => {
-    var _a, _b;
-    const cardStyle = {
-        background: settings.cardBackground,
-        padding: settings.padding,
-        borderRadius: settings.cornerRadius,
-        boxShadow: settings.shadow ? "0 3px 10px rgba(0,0,0,0.12)" : "none",
-        outline: selected ? "2px solid #0078D4" : "none"
-    };
-    const field1Style = {
-        color: settings.field1.color,
-        background: settings.field1.backgroundColor,
-        fontSize: settings.field1.fontSize
-    };
-    const field2Style = {
-        color: settings.field2.color,
-        background: settings.field2.backgroundColor,
-        fontSize: settings.field2.fontSize
-    };
-    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: "card", style: cardStyle, onClick: onClick },
-        react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: "field", style: field1Style }, (_a = item.field1) !== null && _a !== void 0 ? _a : ""),
-        react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: "field", style: field2Style }, (_b = item.field2) !== null && _b !== void 0 ? _b : "")));
-};
-
-
-/***/ }),
-
 /***/ 39202:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -15708,6 +15963,48 @@ module.exports = regExpFlagsDetection.correct ? function (it) {
 
 /***/ }),
 
+/***/ 61038:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   H: () => (/* binding */ TwoFieldCard)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(96540);
+/**
+ * TwoFieldCard.tsx
+ * A tiny React component that renders a single "card" with two textual fields.
+ * - You pass down the text values and the visual settings.
+ * - Styling (colors, font size, backgrounds) comes from settings via inline styles for simplicity.
+ */
+
+const TwoFieldCard = ({ item, settings, selected, onClick }) => {
+    var _a, _b;
+    const cardStyle = {
+        background: settings.cardBackground,
+        padding: settings.padding,
+        borderRadius: settings.cornerRadius,
+        boxShadow: settings.shadow ? "0 3px 10px rgba(0,0,0,0.12)" : "none",
+        outline: selected ? "2px solid #0078D4" : "none"
+    };
+    const field1Style = {
+        color: settings.field1.color,
+        background: settings.field1.backgroundColor,
+        fontSize: settings.field1.fontSize
+    };
+    const field2Style = {
+        color: settings.field2.color,
+        background: settings.field2.backgroundColor,
+        fontSize: settings.field2.fontSize
+    };
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: "card", style: cardStyle, onClick: onClick },
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: "field", style: field1Style }, (_a = item.field1) !== null && _a !== void 0 ? _a : ""),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: "field", style: field2Style }, (_b = item.field2) !== null && _b !== void 0 ? _b : "")));
+};
+
+
+/***/ }),
+
 /***/ 61699:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -19579,136 +19876,6 @@ $({ target: 'String', proto: true }, {
     return result;
   }
 });
-
-
-/***/ }),
-
-/***/ 80278:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   b: () => (/* binding */ Visual)
-/* harmony export */ });
-/* harmony import */ var core_js_stable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(84315);
-/* harmony import */ var core_js_stable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_stable__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7452);
-/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(96540);
-/* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5338);
-/* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(99197);
-/* harmony import */ var _components_TwoFieldCard__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(38995);
-
-
-
-
-
-
-
-
-
-
-/**
- * visual.tsx
- * What this file does:
- * - Implements the Power BI visual lifecycle (constructor, update, destroy).
- * - Creates a React root and re-renders on each update.
- * - Turns the DataView into a simple ViewModel (via transform), then renders cards.
- * - Implements enumerateObjectInstances so your Format pane works.
- */
-class Visual {
-    constructor(options) {
-        // we keep the latest view model to render and to enumerate settings
-        this.viewModel = {
-            items: [],
-            settings: (0,_model__WEBPACK_IMPORTED_MODULE_4__/* .parseSettings */ .P)()
-        };
-        this.host = options.host;
-        this.selectionManager = this.host.createSelectionManager();
-        this.container = document.createElement("div");
-        this.container.className = "visual-root";
-        options.element.appendChild(this.container);
-        this.root = (0,react_dom_client__WEBPACK_IMPORTED_MODULE_3__/* .createRoot */ .H)(this.container);
-        this.render();
-    }
-    update(options) {
-        this.viewModel = (0,_model__WEBPACK_IMPORTED_MODULE_4__/* .transform */ .p)(this.host, options.dataViews && options.dataViews[0]);
-        this.render();
-    }
-    keyForSelectionId(id) {
-        if (!id)
-            return undefined;
-        const anyId = id;
-        try {
-            if (typeof anyId.getKey === "function")
-                return anyId.getKey();
-            if (typeof anyId.getSelector === "function")
-                return JSON.stringify(anyId.getSelector());
-        }
-        catch (_a) { }
-        return String(id);
-    }
-    render() {
-        const { items, settings } = this.viewModel;
-        const selectedKeys = new Set((this.selectionManager.getSelectionIds() || [])
-            .map(id => this.keyForSelectionId(id))
-            .filter((k) => !!k));
-        const cards = (react__WEBPACK_IMPORTED_MODULE_2__.createElement("div", { className: "cards" }, items.map((item, i) => {
-            var _a;
-            const key = (_a = this.keyForSelectionId(item.identity)) !== null && _a !== void 0 ? _a : `row-${i}`;
-            const selected = key ? selectedKeys.has(key) : false;
-            return (react__WEBPACK_IMPORTED_MODULE_2__.createElement(_components_TwoFieldCard__WEBPACK_IMPORTED_MODULE_5__/* .TwoFieldCard */ .H, { key: key, item: item, settings: settings, selected: selected, onClick: (e) => {
-                    const multi = e.ctrlKey || e.metaKey;
-                    if (item.identity) {
-                        this.selectionManager.select(item.identity, multi).then(() => this.render());
-                    }
-                } }));
-        })));
-        this.root.render(cards);
-    }
-    enumerateObjectInstances(options) {
-        const s = this.viewModel.settings;
-        switch (options.objectName) {
-            case "card":
-                return [{
-                        objectName: "card",
-                        properties: {
-                            backgroundColor: { solid: { color: s.cardBackground } },
-                            padding: s.padding,
-                            cornerRadius: s.cornerRadius,
-                            shadow: s.shadow
-                        },
-                        selector: null
-                    }];
-            case "field1Style":
-                return [{
-                        objectName: "field1Style",
-                        properties: {
-                            color: { solid: { color: s.field1.color } },
-                            backgroundColor: { solid: { color: s.field1.backgroundColor } },
-                            fontSize: s.field1.fontSize
-                        },
-                        selector: null
-                    }];
-            case "field2Style":
-                return [{
-                        objectName: "field2Style",
-                        properties: {
-                            color: { solid: { color: s.field2.color } },
-                            backgroundColor: { solid: { color: s.field2.backgroundColor } },
-                            fontSize: s.field2.fontSize
-                        },
-                        selector: null
-                    }];
-            default:
-                return [];
-        }
-    }
-    destroy() {
-        this.root.unmount();
-    }
-}
-/* unused harmony default export */ var __WEBPACK_DEFAULT_EXPORT__ = ((/* unused pure expression or super */ null && (Visual)));
 
 
 /***/ }),
@@ -24685,86 +24852,6 @@ if (DESCRIPTORS && !('size' in URLSearchParamsPrototype)) {
 
 /***/ }),
 
-/***/ 99197:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   P: () => (/* binding */ parseSettings),
-/* harmony export */   p: () => (/* binding */ transform)
-/* harmony export */ });
-const defaults = {
-    cardBackground: "#ffffff",
-    padding: 12,
-    cornerRadius: 8,
-    shadow: true,
-    field1: { color: "#111111", backgroundColor: "transparent", fontSize: 16 },
-    field2: { color: "#444444", backgroundColor: "transparent", fontSize: 14 }
-};
-function getRoleIndex(columns, roleName) {
-    const i = columns.findIndex(c => c.roles && c.roles[roleName]);
-    return i >= 0 ? i : undefined;
-}
-function toStr(v) {
-    return v == null ? undefined : String(v);
-}
-function parseSettings(dataView) {
-    var _a, _b;
-    const objects = ((_b = (_a = dataView === null || dataView === void 0 ? void 0 : dataView.metadata) === null || _a === void 0 ? void 0 : _a.objects) !== null && _b !== void 0 ? _b : {});
-    const getFill = (obj, prop, fallback) => { var _a, _b, _c; return ((_c = (_b = (_a = objects === null || objects === void 0 ? void 0 : objects[obj]) === null || _a === void 0 ? void 0 : _a[prop]) === null || _b === void 0 ? void 0 : _b.solid) === null || _c === void 0 ? void 0 : _c.color) || fallback; };
-    const getNum = (obj, prop, fallback) => {
-        var _a;
-        const v = (_a = objects === null || objects === void 0 ? void 0 : objects[obj]) === null || _a === void 0 ? void 0 : _a[prop];
-        return typeof v === "number" && Number.isFinite(v) ? v : fallback;
-    };
-    const getBool = (obj, prop, fallback) => {
-        var _a;
-        const v = (_a = objects === null || objects === void 0 ? void 0 : objects[obj]) === null || _a === void 0 ? void 0 : _a[prop];
-        return typeof v === "boolean" ? v : fallback;
-    };
-    return {
-        cardBackground: getFill("card", "backgroundColor", defaults.cardBackground),
-        padding: getNum("card", "padding", defaults.padding),
-        cornerRadius: getNum("card", "cornerRadius", defaults.cornerRadius),
-        shadow: getBool("card", "shadow", defaults.shadow),
-        field1: {
-            color: getFill("field1Style", "color", defaults.field1.color),
-            backgroundColor: getFill("field1Style", "backgroundColor", defaults.field1.backgroundColor),
-            fontSize: getNum("field1Style", "fontSize", defaults.field1.fontSize)
-        },
-        field2: {
-            color: getFill("field2Style", "color", defaults.field2.color),
-            backgroundColor: getFill("field2Style", "backgroundColor", defaults.field2.backgroundColor),
-            fontSize: getNum("field2Style", "fontSize", defaults.field2.fontSize)
-        }
-    };
-}
-function transform(host, dataView) {
-    var _a, _b;
-    const settings = parseSettings(dataView);
-    if (!((_b = (_a = dataView === null || dataView === void 0 ? void 0 : dataView.table) === null || _a === void 0 ? void 0 : _a.rows) === null || _b === void 0 ? void 0 : _b.length)) {
-        return { items: [], settings };
-    }
-    const table = dataView.table;
-    const cols = table.columns;
-    const idx = {
-        field1: getRoleIndex(cols, "field1"),
-        field2: getRoleIndex(cols, "field2")
-    };
-    const items = table.rows.map((row, rIndex) => {
-        const identity = host.createSelectionIdBuilder().withTable(table, rIndex).createSelectionId();
-        return {
-            field1: idx.field1 !== undefined ? toStr(row[idx.field1]) : undefined,
-            field2: idx.field2 !== undefined ? toStr(row[idx.field2]) : undefined,
-            identity
-        };
-    });
-    return { items, settings };
-}
-
-
-/***/ }),
-
 /***/ 99449:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -24913,7 +25000,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (visualPlugin)
 /* harmony export */ });
-/* harmony import */ var _src_visual__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(80278);
+/* harmony import */ var _src_visual__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1353);
 
 var powerbiKey = "powerbi";
 var powerbi = window[powerbiKey];

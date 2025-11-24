@@ -2,11 +2,11 @@ import powerbi from "powerbi-visuals-api";
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import DataView = powerbi.DataView;
 /**
- * model.ts
- * Purpose:
- * - Transform the Power BI DataView into a simple array of rows with two fields.
- * - Read and merge visual settings from the Format pane (metadata.objects).
- * - Keep default settings so the visual looks OK even without user edits.
+ * What this file does
+ * - Defines small TypeScript interfaces for our visual's data and settings.
+ * - Reads the user's Format pane settings from dataView.metadata.objects.
+ * - Converts the Power BI table data into a clean array of rows for React.
+ * - Creates selection IDs for each row so clicking a card can select data.
  */
 export interface FieldStyle {
     color: string;
@@ -30,5 +30,17 @@ export interface ViewModel {
     items: TwoFieldItem[];
     settings: CardVisualSettings;
 }
+/**
+ * parseSettings
+ * Reads the settings the user can change in the Format pane and merges them with defaults.
+ * All settings are defined in capabilities.json → "objects".
+ */
 export declare function parseSettings(dataView?: DataView): CardVisualSettings;
+/**
+ * transform
+ * - Reads data from the Power BI DataView (we expect table mapping).
+ * - Locates which columns were put into "field1" and "field2" roles.
+ * - Builds an array of items (one per row), including a selection identity.
+ * - Returns the items plus the merged settings.
+ */
 export declare function transform(host: IVisualHost, dataView?: DataView): ViewModel;

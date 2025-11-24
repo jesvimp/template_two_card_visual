@@ -33,60 +33,105 @@ import { TwoFieldCard } from "./components/TwoFieldCard";
  * - Implements enumerateObjectInstances so your Format pane works.
  */
 
+/*
+We are gonna use the word render quite a lot. this is the exercise of turning the components into 
+what what you see in the UI  - turn it to pixels. When we re-render, only changes are reflected on the components - we do not
+completely changed th inital components, but adjust it for any changes
+*/
+
 
 export class Visual implements IVisual {
+  /* Power BI services we use:
+     - host: gives us selection manager, locale, etc.
+     - selectionManager: enables cross-filter selection when the user clicks. */
   private host: IVisualHost;
   private selectionManager: ISelectionManager;
 
+  /* DOM + React root for rendering */
   private container: HTMLElement;
   private root: Root;
 
-  // we keep the latest view model to render and to enumerate settings
+  /* Latest view model (data + settings) we render and use for the Format pane */
   private viewModel: ViewModel = {
     items: [],
-    settings: parseSettings()
+    settings: parseSettings() // defaults when no DataView yet
   };
 
+  /**
+   * constructor
+   * Called once when the visual is created.
+   * We create a container <div>, attach it to Power BI’s provided element,
+   * create a React root, and perform an initial render.
+   */
   constructor(options: VisualConstructorOptions) {
     this.host = options.host;
     this.selectionManager = this.host.createSelectionManager();
 
+    // Create and attach a container for React to render into
     this.container = document.createElement("div");
     this.container.className = "visual-root";
     options.element.appendChild(this.container);
 
+    // React 18 root
     this.root = createRoot(this.container);
+
+    // Initial render (empty items + default settings)
     this.render();
   }
 
+  /**
+   * update
+   * Called whenever Power BI has new data, the visual is resized,
+   * or the user changes something (like settings).
+   * We rebuild the ViewModel and trigger a render.
+   */
   public update(options: VisualUpdateOptions) {
-    this.viewModel = transform(this.host, options.dataViews && options.dataViews[0]);
+    // options.dataViews is an array; we use the first one
+    this.viewModel = transform(this.host, options.dataViews?.[0]);
     this.render();
   }
 
+  /**
+   * keyForSelectionId
+   * Converts a selection ID (Power BI internal object) to a stable string key.
+   * We use this to track which rows are selected when re-rendering.
+   */
   private keyForSelectionId(id: powerbi.extensibility.ISelectionId | undefined): string | undefined {
     if (!id) return undefined;
     const anyId = id as any;
     try {
       if (typeof anyId.getKey === "function") return anyId.getKey();
       if (typeof anyId.getSelector === "function") return JSON.stringify(anyId.getSelector());
-    } catch {}
+    } catch {
+      // If anything goes wrong, fall through to String(id)
+    }
     return String(id);
   }
 
+  /**
+   * render
+   * React render. We:
+   * - compute which items are currently selected,
+   * - render one TwoFieldCard per row,
+   * - wire clicks to the selection manager (supports Ctrl/Cmd for multi-select).
+   */
   private render() {
     const { items, settings } = this.viewModel;
+
+    // Build a Set of selected keys so each card can know if it's selected
     const selectedKeys = new Set(
       (this.selectionManager.getSelectionIds() || [])
         .map(id => this.keyForSelectionId(id))
         .filter((k): k is string => !!k)
     );
 
+    // Cards list
     const cards = (
       <div className="cards">
         {items.map((item, i) => {
           const key = this.keyForSelectionId(item.identity) ?? `row-${i}`;
           const selected = key ? selectedKeys.has(key) : false;
+
           return (
             <TwoFieldCard
               key={key}
@@ -94,9 +139,12 @@ export class Visual implements IVisual {
               settings={settings}
               selected={selected}
               onClick={(e) => {
+                // Hold Ctrl/Cmd to multi-select
                 const multi = e.ctrlKey || e.metaKey;
                 if (item.identity) {
-                  this.selectionManager.select(item.identity, multi).then(() => this.render());
+                  this.selectionManager
+                    .select(item.identity, multi)
+                    .then(() => this.render()); // re-render to reflect selection state
                 }
               }}
             />
@@ -105,10 +153,19 @@ export class Visual implements IVisual {
       </div>
     );
 
+    // Push the virtual DOM to the actual DOM
     this.root.render(cards);
   }
 
-  public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
+  /**
+   * enumerateObjectInstances
+   * This is how the Format pane reads your settings.
+   * For each "object" defined in capabilities.json, return an array with a single
+   * instance describing current values. Power BI will render controls accordingly.
+   */
+  public enumerateObjectInstances(
+    options: EnumerateVisualObjectInstancesOptions
+  ): VisualObjectInstanceEnumeration {
     const s = this.viewModel.settings;
 
     switch (options.objectName) {
@@ -121,7 +178,7 @@ export class Visual implements IVisual {
             cornerRadius: s.cornerRadius,
             shadow: s.shadow
           },
-          selector: null
+          selector: null // null means "visual-level" settings, not data-point scoped
         }];
 
       case "field1Style":
@@ -146,14 +203,4 @@ export class Visual implements IVisual {
           selector: null
         }];
 
-      default:
-        return [];
-    }
-  }
-
-  public destroy(): void {
-    this.root.unmount();
-  }
-}
-
-export default Visual;
+      de
