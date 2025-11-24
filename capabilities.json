@@ -1,31 +1,48 @@
 {
+  "privileges": [],
   "dataRoles": [
-    { "name": "Category", "displayName": "Category", "kind": "Grouping" },
-    { "name": "Values", "displayName": "Values", "kind": "Measure" }
+    { "name": "field1", "kind": "Grouping", "displayName": "Field 1" },
+    { "name": "field2", "kind": "Grouping", "displayName": "Field 2" }
   ],
   "dataViewMappings": [
     {
-      "categorical": {
-        "categories": {
-          "for": { "in": "Category" },
-          "dataReductionAlgorithm": { "top": { "count": 1000 } }
-        },
-        "values": {
+      "table": {
+        "rows": {
           "select": [
-            { "for": { "in": "Values" } }
-          ]
+            { "for": { "in": "field1" } },
+            { "for": { "in": "field2" } }
+          ],
+          "dataReductionAlgorithm": { "top": {} }
         }
       }
     }
   ],
-  "objects": {},
-  "privileges": [
-    {
-      "name": "WebAccess",
-      "parameters": [
-        "http://127.0.0.1:8000",
-        "http://localhost:8000"
-      ]
+  "sorting": { "custom": {} },
+  "objects": {
+    "card": {
+      "displayName": "Card",
+      "properties": {
+        "backgroundColor": { "type": { "fill": { "solid": { "color": true } } } },
+        "padding":         { "type": { "numeric": true } },
+        "cornerRadius":    { "type": { "numeric": true } },
+        "shadow":          { "type": { "bool": true } }
+      }
+    },
+    "field1Style": {
+      "displayName": "Field 1",
+      "properties": {
+        "color":           { "type": { "fill": { "solid": { "color": true } } } },
+        "backgroundColor": { "type": { "fill": { "solid": { "color": true } } } },
+        "fontSize":        { "type": { "numeric": true } }
+      }
+    },
+    "field2Style": {
+      "displayName": "Field 2",
+      "properties": {
+        "color":           { "type": { "fill": { "solid": { "color": true } } } },
+        "backgroundColor": { "type": { "fill": { "solid": { "color": true } } } },
+        "fontSize":        { "type": { "numeric": true } }
+      }
     }
-  ]
+  }
 }

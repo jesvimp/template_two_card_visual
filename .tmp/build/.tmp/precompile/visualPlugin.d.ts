@@ -1,4 +1,4 @@
 import powerbiVisualsApi from "powerbi-visuals-api";
 import IVisualPlugin = powerbiVisualsApi.visuals.plugins.IVisualPlugin;
-declare var LocalChat_2025_10: IVisualPlugin;
-export default LocalChat_2025_10;
+declare var im_template_two_field_card_24_11_2025_DEBUG: IVisualPlugin;
+export default im_template_two_field_card_24_11_2025_DEBUG;

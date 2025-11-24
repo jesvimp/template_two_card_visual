@@ -1,34 +1,23 @@
 {
-  "name": "visual",
-  "description": "default_template_value",
-  "version": "1.0.0.0",
-  "repository": {
-    "type": "default_template_value",
-    "url": "default_template_value"
-  },
+  "name": "im-two-field-card",
+  "version": "1.0.0",
+  "description": "Minimal React Power BI visual template (two fields).",
   "license": "MIT",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test"
+    "start": "pbiviz start",
+    "package": "pbiviz package",
+    "lint": "echo \"(add eslint later)\""
   },
   "dependencies": {
-    "@types/d3": "7.4.3",
-    "d3": "7.9.0",
+    "core-js": "^3.46.0",
     "powerbi-visuals-api": "~5.3.0",
-    "powerbi-visuals-utils-formattingmodel": "6.0.4",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "regenerator-runtime": "^0.14.1"
   },
   "devDependencies": {
-    "@types/node": "^24.7.2",
     "@types/react": "^18.3.26",
     "@types/react-dom": "^18.3.7",
-    "@typescript-eslint/eslint-plugin": "^8.8.0",
-    "eslint": "^9.11.1",
-    "eslint-plugin-powerbi-visuals": "^1.0.0",
-    "typescript": "5.5.4"
+    "typescript": "^5.5.4"
   }
 }
-
-

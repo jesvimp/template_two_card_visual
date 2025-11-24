@@ -5,9 +5,9 @@ import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualC
 import DialogConstructorOptions = powerbiVisualsApi.extensibility.visual.DialogConstructorOptions;
 var powerbiKey: any = "powerbi";
 var powerbi: any = window[powerbiKey];
-var LocalChat_2025_10: IVisualPlugin = {
-    name: 'LocalChat_2025_10',
-    displayName: 'Local Chat',
+var im_template_two_field_card_24_11_2025_DEBUG: IVisualPlugin = {
+    name: 'im_template_two_field_card_24_11_2025_DEBUG',
+    displayName: 'Two-field Card (React)',
     class: 'Visual',
     apiVersion: '5.3.0',
     create: (options?: VisualConstructorOptions) => {
@@ -27,6 +27,6 @@ var LocalChat_2025_10: IVisualPlugin = {
 if (typeof powerbi !== "undefined") {
     powerbi.visuals = powerbi.visuals || {};
     powerbi.visuals.plugins = powerbi.visuals.plugins || {};
-    powerbi.visuals.plugins["LocalChat_2025_10"] = LocalChat_2025_10;
+    powerbi.visuals.plugins["im_template_two_field_card_24_11_2025_DEBUG"] = im_template_two_field_card_24_11_2025_DEBUG;
 }
-export default LocalChat_2025_10;
+export default im_template_two_field_card_24_11_2025_DEBUG;

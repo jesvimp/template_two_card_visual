@@ -1,17 +1,17 @@
 {
   "visual": {
-    "name": "LocalChat",
-    "displayName": "Local Chat",
-    "guid": "LocalChat_2025_10",
+    "name": "im_template_two_field_card",
+    "displayName": "Two-field Card (React)",
+    "guid": "im_template_two_field_card_24_11_2025",
     "visualClassName": "Visual",
     "version": "1.0.0.0",
-    "description": "Local-only chat UI (no API calls)",
+    "description": "A minimal React template showing two customizable fields per row.",
     "supportUrl": "https://example.com/support",
     "gitHubUrl": "https://example.com/repo"
   },
   "author": {
-    "name": "Your Name or Company",
-    "email": "you@example.com"
+    "name": "Implement Consulting Group",
+    "email": "jesv@implement.dk"
   },
   "apiVersion": "5.3.0",
   "assets": {
