@@ -42,4 +42,45 @@ interface Props {
   item: TwoFieldItem;                 // the actual values to display
   settings: CardVisualSettings;       // how the card should look
   selected?: boolean;                 // if true, we draw a selection outline
-  onClick
+  onClick?: (e: React.MouseEvent) => void; // click handler (parent wires selection here)
+}
+
+/**
+ * TwoFieldCard
+ * - React.FC<Props> means a functional component that uses "Props".
+ * - We compute small style objects (typed as React.CSSProperties),
+ *   then apply them directly to the elements via the "style" prop.
+ */
+export const TwoFieldCard: React.FC<Props> = ({ item, settings, selected, onClick }) => {
+  // Card container styles (box, padding, radius, optional shadow, selection outline)
+  const cardStyle: React.CSSProperties = {
+    background: settings.cardBackground,
+    padding: settings.padding,              // number -> React interprets as "px"
+    borderRadius: settings.cornerRadius,    // number -> "px"
+    boxShadow: settings.shadow ? "0 3px 10px rgba(0,0,0,0.12)" : "none",
+    outline: selected ? "2px solid #0078D4" : "none" // show a blue outline if selected
+  };
+
+  // Field 1 styles (comes from Format pane via settings)
+  const field1Style: React.CSSProperties = {
+    color: settings.field1.color,
+    background: settings.field1.backgroundColor,
+    fontSize: settings.field1.fontSize     // number -> "px"
+  };
+
+  // Field 2 styles (also fully controlled via Format pane)
+  const field2Style: React.CSSProperties = {
+    color: settings.field2.color,
+    background: settings.field2.backgroundColor,
+    fontSize: settings.field2.fontSize
+  };
+
+  return (
+    // The outer card box; parent passes onClick for selection handling
+    <div className="card" style={cardStyle} onClick={onClick}>
+      {/* Each field uses its own style; "?? ''" shows empty string if value is missing */}
+      <div className="field" style={field1Style}>{item.field1 ?? ""}</div>
+      <div className="field" style={field2Style}>{item.field2 ?? ""}</div>
+    </div>
+  );
+};

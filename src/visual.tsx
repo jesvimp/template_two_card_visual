@@ -203,4 +203,19 @@ export class Visual implements IVisual {
           selector: null
         }];
 
-      de
+      default:
+        // If Desktop asks about unsupported objects, return an empty list
+        return [];
+    }
+  }
+
+  /**
+   * destroy
+   * Called when the visual is removed. We unmount React to free resources.
+   */
+  public destroy(): void {
+    this.root.unmount();
+  }
+}
+
+export default Visual;
